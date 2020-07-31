@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        /**
+            容器属性：
+                display:grid 默认是块元素
+                display:inline-grid 默认是行内块元素
+                注意： 设置为grid后  子元素的float display:inline-block display:table-cell 等设置都无效了
+            属性解释：
+                行宽列宽
+                grid-template-columns: 定义列数 每一列的列宽（一排有几个div 每个div宽度是多少）
+                grid-template-columns:100px 100px 100px; //代表有三列 每列是100px的宽度 也可以用百分比
+                grid-template-rows: 每一行的行高（每行div的高度是多少）
+                grid-template-rows:100px 100px 100px; //从上至下 每行高度为100px 如果有第四行 未设置就是其自身高度
+                即： 每一行的高度是一样  每一列的宽度是一行的 就像格子一样 就是网格布局
+                重复写值 可用repeat函数
+                grid-template-columns:100px 100px 100px  => grid-template-columns:repeat(3,100px) 重复三次 每次100px
+                也可以是不固定的重复模式： grid-template-columns:repeat(2,100px 80px) 重复2次100px  80px的模式
+                就是4列 等价于  grid-template-columns:100px 80px 100px 80px
+                关键词
+                auto-fill: 如果容器大小不固定 网格大小固定 可以用关键词自动填充
+                    grid-template-columns:repeat(auto-fill,100px) 自动填充 每列100px宽度
+                    但是列的数量是不固定的  只要浏览器能够容纳的下 就可以放置元素
+                fr(fraction):倍数 如果有两列 1fr 2fr 后者就是前者的两倍
+                    grid-template-columns:1fr 2fr;
+                    grid-template-rows:50px 1fr 2fr;
+                minmax()
+                grid-template-columns:1fr 5fr minmax(100px 1fr);
+                解释： 每一列是1fr 第二列是5fr 第三列最小值 100px 最大值1fr
+
+                grid-auto-flow: 属性控制着自动布局算法怎么样运作 精确指定在网格中被自动布局的元素怎样排列
+                默认的放置顺序是 先行后列 即先填满第一行 
+                grid-auto-flow:row 默认是row （如果设置了固定的宽度  就会有空格）
+                grid-auto-flow:row dense 表示尽可能填满表格 （弥补了上面的空格那种情况）
+                grid-aoto-flow:column 表示先列后行 
+
+                justify-items: 设置单元格内容的水平位置（左中右）
+                    属性值：
+                    space-around 每个项目两侧的间隔相等 所以 项目之间的间隔比项目与容器边框的间隔大一倍
+                    space-between 项目与项目的间隔相等 项目与容器边框之间没有间隔
+                    space-evenly 项目与项目的间隔相等 项目与容器边框之间也是同样长度的间隔
+                    stretch 项目大小没有指定时 拉伸占据整个网格容器
+                align-items: 设置单元格的垂直位子（上中下）
+
+                grid-column-start: 左边框所在的垂直网格线
+                grid-column-end: 右边框所在的处置网格线
+                grid-column: 上面左右两个垂直网格线的简写
+
+                grid-row-start: 上边框所在的水平网格线
+                grid-row-end: 下边框所在的水平网格线
+                grid-row: 上下水平网格线的简写
+        */
+        /* .wrapper{
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            grid-gap: 20px;
+            grid-auto-rows: minmax(100px,auto);
+        }
+        .one{
+            grid-column: 1/2;
+            grid-row: 1;
+            background-color: #19caad;
+        }
+        .two{
+            grid-column: 2/4;
+            grid-row: 1/3;
+            background-color: #8cc7b5;
+        }
+        .three {
+            grid-column: 1;
+            grid-row: 2/5;
+            background-color: #d1ba74;
+        }
+        .four{
+            grid-column: 3;
+            grid-row: 3;
+            background-color: #bee7e9;
+        }
+        .five{
+            grid-column: 2;
+            grid-row: 3/5;
+            background-color: #e6ceac;
+        }
+        .six{
+            grid-column: 3;
+            grid-row: 4;
+            background-color: #ecad9e;
+        }
+        .item{
+            text-align: center;
+            font-size: 200%;
+            color: #ffffff;
+        } */
+        .wrapper{
+            display: grid;
+            /* grid-template-columns: 200px 100px 200px; */
+            /* grid-template-columns: repeat(auto-fill,200px); */
+            /* grid-template-columns: 200px 1fr 2fr;  */
+            /* grid-template-columns: 1fr 1fr minmax(300px,2fr); */
+            /* grid-template-columns: 100px auto 100px; */
+            grid-template-columns: repeat(3,120px);
+            grid-column-gap: 5px;
+            grid-row-gap: 50px;
+            grid-auto-rows: 50px;
+            /* grid-template-rows: repeat(2,50px); */
+        }
+        /* .item{
+            border: 2px solid #ff9900;
+        } */
+        .box1{
+            margin-top: 50px;
+            display: grid;
+            grid-template-columns: repeat(3,120px);
+            grid-template-areas: ". header header"
+            "sidebar content content";
+            background-color: #ffffff;
+            color: #444444;
+        }
+        .sidebar{
+            grid-area: sidebar;
+        }
+        .content{
+            grid-area: content;
+        }
+        .header{
+            grid-area: header;
+        }
+
+        .box2{
+            margin-top: 50px;
+            background-color: bisque;
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            /* grid-gap:20px; */
+            grid-auto-rows: minmax(100px,auto);
+        }
+        .subBox1{
+            grid-column-start: 1;
+            grid-column-end: 2;
+            background-color: #19caad;
+        }
+        .subBox2{
+            grid-column-start: 2;
+            grid-column-end: 4;
+            grid-row-start: 1;
+            grid-row-end: 2;
+            background-color: #8cc7b5;
+            /* z-index: 1; */
+        }
+        .subBox3{
+            grid-column-start: 3;
+            grid-column-end: 4;
+            grid-row-start: 1;
+            grid-row-end: 4;
+            background-color: #d1ba74;
+        }
+        .subBox4{
+            grid-column-start: 1;
+            grid-column-end: 2;
+            grid-row-start: 2;
+            grid-row-end: 5;
+            background-color: #bee7e9;
+        }
+        .subBox5{
+            grid-column-start: 2;
+            grid-column-end: 3;
+            grid-row-start: 2;
+            grid-row-end: 5;
+            background-color: #e6ceac;
+        }
+        .subBox6{
+            grid-column: 3;
+            grid-row: 4;
+            background-color: #ecad9e;
+        }
+    </style>
+</head>
+<body>
+   <div class="wrapper">
+       <div class="one item">One</div>
+       <div class="two item">Two</div>
+       <div class="three item">Three</div>
+       <div class="four item">Four</div>
+       <div class="five item">Five</div>
+       <div class="six item">Six</div>
+   </div>
+   <!-- <div class="box1">
+       <div class="subBox header">header</div>
+       <div class="subBox sidebar">sidebar</div>
+       <div class="subBox content">content</div>
+   </div> -->
+
+   <div class="box2">
+    <div class="subBox1 item">One</div>
+    <div class="subBox2 item">Two</div>
+    <div class="subBox3 item">Three</div>
+    <div class="subBox4 item">Four</div>
+    <div class="subBox5 item">Five</div>
+    <div class="subBox6 item">Six</div>
+  </div>
+</body>
+</html>

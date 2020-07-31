@@ -1,0 +1,70 @@
+工作方式：
+    1 在页面初始化时加载入口模块 其他模块按需异步加载；
+    2 存在依赖关系的模块按照一定规则合并为单个文件，一次性加载到页面中
+选择的原因：
+ 支持多种模块标准 
+ 支持多种类型资源的处理 比如图片 样式等
+ 拥有活跃社区支持 
+ code splitting 即代码分割 意思是分割打包后的资源 首屏只加载必要的部分 不太重要部分翻到后面动态按需加载
+ 对于体积大的应用来说就是福音啊 可以减小资源体积 提升首页渲染速度
+
+ es6 module 相对于commonjs 的优势
+    静态分析优势：
+    僵尸代码监测和排除 减小资源打包体积 即用静态分析工具监测模块或接口中哪些没有被调用过
+    （比如某个组件只用了部分功能 但有可能所有代码都被加载进来了） 这些加载进来未被调用过的代码就是僵尸代码
+    静态分析可以在打包时将这些僵尸代码去掉  减小资源打包体积
+    编译器优化： 动态模块的导入是一个对象  而es6 module 可直接导入变量 减少引用层级 提高程序效率
+
+loader 预处理器
+    在webpack 的眼中  这些静态资源都是模块 webpack 本身只认识js 其他类型的资源必须预先定义一个或者多个loader转译
+    输出为webpack 能接收的形式在继续进行处理 所以说loader 做的就是预处理工作
+
+exclude 和 include
+    exclude 用来排除指定目录下的模块 即下面node_modules 中的模块不会执行这条规则 该项配置项通常是必加的 否则会拖慢整体打包速度
+    module.exports = {
+        rules:[
+            {
+                test:/\.css$/,
+                use:['style-loader','css-loader'],
+                exclude:/node_modules/
+            }
+        ]
+    }
+    include 用来包含指定目录下的模块
+注意，exclude 和 include 都存在时，exclude 优先级高。
+resource 和 issuer
+    都是用于更加精确地确定模块规则的作用范围
+    比如组件 import './index.css' 可以这样子理解 ： 被加载模块是 resource 加载方就是issuer
+    module.exports = {
+        module:{
+            rules:[
+                {
+                    use:['style-loader','css-loader'],
+                    resource:{
+                        test:/\.css$/,
+                        exclude:/node_modules/
+                    },
+                    issuer:{
+                        test:/\.js$/,
+                        exclude:'/node_modules/',
+                        include:'/src/pages/'
+                    }
+                }
+            ]
+        }
+    }
+enforce 指定一个loader的种类 默认值式normal
+    可选值：pre, 在use配置的所有loader之前执行  如下就是保证检测的代码不是其他loader更改过来的
+           post 在use配置的所有loader之后执行
+    module.exports = {
+        module: {
+            rules: [
+            {
+                test: /\.js$/,
+                enforce: 'pre',
+                use: 'eslint-loader'
+            }
+            ]
+        }
+    }
+babel-loader 主要是用来将es6+ 编译成es5

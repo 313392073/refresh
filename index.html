@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .wrap {
+            position: relative;
+            width: 150px;
+            background-color: aqua;
+            margin: 150px auto;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        p {
+            display: inline-block;
+            white-space: nowrap;
+        }
+        p:hover{
+            animation: move 1.5s infinite alternate linear;
+        }
+        @keyframes move{
+            0% {
+                left: 0;
+                transform: translate(0,0)
+            }
+            100% {
+                left: 100%;
+                transform: translate(calc(-100% + 150px),0)
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <p title="我的宽度是正常宽度">我的宽度是正常宽度</p>
+        <p class="scroll" title="我的宽度是溢出了一小部分">我的宽度是溢出了一小部分</p>
+        <p class="scroll" title="我的宽度是溢出了溢出了很大一部分">我的宽度是溢出了溢出了很大一部分</p>
+    </div>
+    <script type="text/javascript">
+        // function identify() {
+        //     return this.name.toUpperCase()
+        // }
+        // function speak() {
+        //     return "Hello,Im"+identify.call(this)
+        // }
+        // var me = {
+        //     name:'Kyle'
+        // }
+        // var you = {
+        //     name:"Reader"
+        // }
+        // console.log(identify.call(me))
+        // console.log(identify.call(you))
+        // console.log(speak.call(me))
+        // console.log(speak.call(you))
+
+        // function identify(context) {
+        //     return context.name.toUpperCase()
+        // }
+        // function speak(context) {
+        //     return "Hello Im"+identify.call(context)
+        // }
+
+        // function foo(num) {
+        //     console.log('foo:'+num)
+        //     this.count++
+        //     console.log(this)
+        // }
+        // foo.count = 0
+        // var i;
+        // for(var i=0;i<10;i++) {
+        //     if(i>5) {
+        //         foo(i)
+        //     }
+        // }
+        // // 6 7 8 9 
+        // console.log(foo.count) //0
+        // //当代码执行foo.count = 0时  他确实向函数对象foo添加了一个count属性
+        // //  但是对于函数内部的this.count引用 this其实根本就不指向那个函数对象 即便属性名称一样 但根对象也不同 因为产生了混淆
+            
+        // function foo(num) {
+        //     console.log("foo:"+num)
+        //     console.log(data.count++)
+        // }
+        // var data = {
+        //     count:0
+        // }
+        // var i;
+        // for(var i=0;i<10;i++) {
+        //     if(i>5){
+        //         foo(i)
+        //     }
+        // }
+        // // 6 7 8 9
+        // console.log(data.count) //4
+
+        // function foo() {
+        //    return foo.count = 4
+        // }
+        // setTimeout(function() {},10)
+
+        // function foo(num) {
+        //     console.log("foo:"+num)
+        //     console.log(foo.count++)
+        // }
+        // foo.count = 0
+        // var i
+        // for(i=0;i<10;i++) {
+        //     if(i>5) {
+        //         foo(i)
+        //     }
+        // }
+        // console.log(foo.count)
+
+        // function foo() {
+        //     var a = 2;
+        //     this.bar()
+        // }
+        // function bar() {
+        //     console.log(this.a)
+        // }
+        // foo() //undefined
+
+
+        // function baz() {
+        //     console.log("baz")
+        //     bar()
+        // }
+        // function bar() {
+        //     console.log("bar")
+        //     foo()
+        // }
+        // function foo() {
+        //     debugger
+        //     console.log("foo")
+        // }
+        // baz()
+
+        // function foo() {
+        //     console.log(this.a)
+        // }
+        // var a = 2
+        // foo() //2
+
+        // function foo() {
+        //     console.log(this.a)
+        // }
+        // var a = 2;
+        // (function() {
+        //     "use strict"
+        //     foo()
+        // })()
+
+        // function foo() {
+        //     console.log(this.a)
+        // }
+        // var obj ={
+        //     a:2,
+        //     foo:foo
+        // }
+        // this.foo()
+        // obj.foo()
+        // foo()
+
+        // function foo() {
+        //     console.log(this.a)
+        // }
+        // var obj2 = {
+        //     a:42,
+        //     foo:foo
+        // }
+        // var obj1 = {
+        //     a:2,
+        //     obj2:obj2
+        // }
+        // obj1.obj2.foo() //42
+
+        // function foo() {
+        //     console.log(this.a)
+        // }
+        // var obj = {
+        //     a:2,
+        //     foo:foo
+        // }
+        // var bar = obj.foo
+        // var a = "oops,global"
+        // bar() //oops global 
+        //尽管bar 似乎是obj.foo的引用 但实际上它只是另一个foo本身的引用而已
+        // 另外 起作用的调用点是bar()
+
+        // function foo() {
+        //     console.log(this.a)
+        // }
+        // function doFoo(fn) {
+        //     fn()
+        // }
+        // var obj = {
+        //     a:2,
+        //     foo:foo
+        // }
+        // var a = "oops,global"
+        // doFoo(obj.foo)
+        // obj.foo()
+        //参数传递仅仅是一种隐含的赋值  而且因为我们在传递一个函数
+        //它是一个隐含的引用赋值  所以最终结果和我们前一个代码段一样
+
+        // function foo() {
+        //     console.log(this)
+        //     console.log(this.a)
+        // }
+        // var obj = {
+        //     a:2,
+        //     foo:foo
+        // }
+        // var a = "oops,global"
+        // setTimeout(() => {
+        //     console.log(1111)
+        //     obj.foo()
+        // }, 1000);
+        // setTimeout(function() {
+        //     console.log(222)
+        //     obj.foo()
+        // },500)
+        // setTimeout(obj.foo,100)
+        // obj.foo()
+            
+        // 我们的回调函数丢掉他们的this绑定是十分常见的事情 但是this使我们吃惊的另一种方式是 
+        // 接受我们回调的函数故意改变调用的this 那些很流行的js库中的事件处理器就十分喜欢强制你的回调的this
+        // 指向触发事件的dom元素 虽然有时这很有用 
+
+        // function foo() {
+        //     console.log(this.a)
+        // }
+        // var obj = {
+        //     a:2
+        // }
+        // foo.call(obj)
+        //通过foo.call(..)使用 明确绑定 来调用foo 允许我们强制函数的this指向obj
+            
+        // function foo() {
+        //     console.log(this.a)
+        // }
+        // var obj = {
+        //     a:2
+        // }
+        // var bar = function() {
+        //     foo.call(obj)
+        // }
+        // bar() //2
+        // setTimeout(bar,100) //2
+        // bar.call(window) //2
+        //我们创建了一个函数bar()  在它的内部手动调用foo.call(obj) 由此强调this绑定到obj 并调用foo
+    
+        // function foo(something) {
+        //     console.log(this.a,something)
+        //     return this.a+something
+        // }
+        // var obj = {
+        //     a:2
+        // }
+        // var bar = function() {
+        //     return foo.apply(obj,arguments)
+        // }
+        // var b = bar(3) //2 3 
+        // console.log(b) //5
+
+        // function foo(something) {
+        //     console.log(this.a,something)
+        //     return this.a+something
+        // }
+        // function bind(fn,obj) {
+        //     return function() {
+        //         return fn.apply(obj,arguments)
+        //     }
+        // }
+        // var obj = {
+        //     a:2
+        // }
+        // var bar = bind(foo,obj)
+        // var b = bar(3)
+        // console.log(b)
+
+        // function foo(something) {
+        //     console.log(this.a,something)
+        //     return this.a+something
+        // }
+        // var obj = {
+        //     a:2
+        // }
+        // var bar = foo.bind(obj)
+        // var b = bar(3)
+        // console.log(b)
+        // bind返回一个硬编码的新函数 它使用你指定的this环境来调用原本的函数
+        // function foo(el) {
+        //     console.log(this,el,this.id)
+        // }
+        // var obj = {
+        //     id:"awesome"
+        // }
+        // var arr = [1,2,3]
+        // arr.forEach(foo,obj)
+
+        // function foo() {
+        //     console.log(this.a)
+        // }
+        // var a = 2
+        // var o = {a:3,foo:foo}
+        // var p = {a:4}
+        // // o.foo(); //3
+        // // // function c() {
+        // // //    return p.foo = o.foo
+        // // // }
+        // // // c()() //2
+
+        // // (p.foo = o.foo)()
+        // o.foo();(p.foo = o.foo)()
+
+        // function foo(a) {
+        //     this.a = a
+        // }
+        // var bar = new foo(2)
+        // console.log(bar.a)
+        // 通过在前面使用new来调用foo(..) 我们构建了一个新的对象并把这个新的对象作为foo(..)调用的this
+        // new 是函数调用绑定this的最后一种方式  我们称之为new绑定
+
+        // function foo() {
+        //     console.log(this.a)
+        // }
+        // var obj1 = {
+        //     a:2,
+        //     foo:foo
+        // }
+        // var obj2 = {
+        //     a:3,
+        //     foo:foo
+        // }
+        // obj1.foo() //2
+        // obj2.foo() //3
+
+        // obj1.foo.call(obj2) //3
+        // obj2.foo.call(obj1) //2
+
+        // function foo(dosomething) {
+        //     this.a = dosomething
+        // }
+        // var obj1 = {
+        //     foo:foo
+        // }
+        // var obj2 = {}
+        // obj1.foo(2)
+        // console.log(obj1.a) //2
+
+        // obj1.foo.call(obj2,3)
+        // console.log(obj2)
+
+        // var bar = new obj1.foo(4)
+        // console.log(obj1.a)
+        // console.log(bar.a)
+
+        // function foo(something) {
+        //     this.a = something
+        // }
+        // var obj1 = {}
+        // var bar = foo.bind(obj1)
+        // bar(2)
+        // console.log(obj1,obj1.a)
+
+        // var baz = new bar(3)
+        // console.log(obj1.a)
+        // console.log(baz.a)
+        
+        // var strPrimitive = "I am a string"
+        // console.log( typeof strPrimitive) //string
+        // console.log(strPrimitive instanceof String) //false
+
+        // var strObject = new String("I am a string")
+        // console.log(typeof strObject)
+        // console.log(strObject instanceof String) //true
+        // console.log(Object.prototype.toString.call(strObject)) //[object String]
+            
+        // var myObject = {}
+        // myObject[true] = "foo";
+        // myObject[3] = "bar"
+        // myObject[myObject] = "baz"
+        // console.log(myObject)
+
+        // var prefix = "foo";
+        // var myObject = {
+        //     [prefix+"bar"]:"hello",
+        //     [prefix+"baz"]:"world"
+        // }
+        // console.log(myObject)
+
+        // function foo() {
+        //     console.log("foo")
+        // }
+        // var someFoo = foo
+        // var myObject = {
+        //     someFoo:foo
+        // }
+        // console.log(foo)
+        // console.log(someFoo)
+        // console.log(myObject.someFoo)
+        // /*
+        //  * someFoo和myObject,someFoo 只不过是同一个函数地两个分离地引用 他们中地任何一个都不意味着这个函数很特别或被其他对象所‘拥有’
+        //  * 如果上面foo()定义里面拥有一个this引用 那么myObject.someFoo的隐含绑定将会是这两个引用间唯一可以观察到的不同
+        //  * 他们中的任何一个都没有称为'方法'的道理
+        //  * /
+
+        // var myObject = {
+        //     a:2
+        // }
+        // console.log(Object.getOwnPropertyDescriptor(myObject,"a"))
+
+        // var myObject = {}
+        // Object.defineProperty(myObject,"a",{
+        //     value:'aaa',
+        //     writable:true,
+        //     configurable:true,
+        //     enumerable:true
+        // })
+        // myObject.a = 2
+        // console.log(Object.getOwnPropertyDescriptor(myObject,"a"))
+
+        // var myObject = {
+        //     a:2
+        // }
+        // myObject.a = 3
+        // console.log(myObject)
+        // Object.defineProperty(myObject,"a",{
+        //     value:4,
+        //     writable:true,
+        //     configurable:false,
+        //     enumerable:true
+        // })
+        // console.log(myObject)
+        // myObject.a = 5
+        // console.log(myObject)
+        // console.log(Object.keys(myObject))
+        // Object.defineProperty(myObject,"a",{
+        //     value:6,
+        //     writable:true,
+        //     configurable:true,
+        //     enumerable:true
+        // })
+        // console.log(myObject)
+
+
+        // var myObject = {
+        //     get a() {
+        //         return 2
+        //     }
+        // }
+        // Object.defineProperty(myObject,"b",{
+        //     get:function() {
+        //         return this.a*5
+        //     },
+        //     enumerable:true
+        // })
+        // console.log(myObject,myObject.a,myObject.b)
+
+        // var myObject = {
+        //     get a() {
+        //         return this._a_
+        //     },
+        //     set a(val) {
+        //         this._a_ = val*2
+        //     }
+        // }
+        // myObject.a = 3
+        // console.log(myObject.a)
+
+        // var myObject = {
+        //     a:2
+        // }
+        // console.log(("a" in myObject)) //true
+        // console.log(("b" in myObject)) //false
+        // console.log(myObject.hasOwnProperty("a")) //true
+        // console.log(myObject.hasOwnProperty("b")) //false
+        var myObject = {}
+        Object.defineProperty(myObject,"a",{enumerable:true,value:2})
+        console.log("a" in myObject)
+        console.log(myObject.hasOwnProperty("a"))
+        Object.defineProperty(myObject,"b",{enumerable:false,value:3})
+        console.log("b" in myObject)
+        console.log(myObject.hasOwnProperty("b"))
+        console.log(myObject)
+        for(var key in myObject) {
+            console.log(key)
+        }
+    </script>
+</body>
+</html>
