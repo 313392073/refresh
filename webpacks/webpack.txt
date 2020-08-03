@@ -53,7 +53,7 @@ resource 和 issuer
             ]
         }
     }
-enforce 指定一个loader的种类 默认值式normal
+enforce  强制指定一个loader的的作用顺序  默认值式normal
     可选值：pre, 在use配置的所有loader之前执行  如下就是保证检测的代码不是其他loader更改过来的
            post 在use配置的所有loader之后执行
     module.exports = {
@@ -68,3 +68,69 @@ enforce 指定一个loader的种类 默认值式normal
         }
     }
 babel-loader 主要是用来将es6+ 编译成es5
+babel-core 是babel编译器的核心模块
+babel-preset-env 他是babel官方推荐的预置器  可以根据用户设置的目标环境自动添加所需的插件和补丁来编译es6+代码
+
+cacheDirectory:true 启用缓存机制 在重复打包为改变过的模块时 防止二次编译 同样也会加快打包的速度 
+babel-loader 支持从.babelrc文件读取babel配置
+
+分离样式文件
+    通过js引入样式文件只是把样式添加到style标签中去了  但是不是引入的一个独立的css文件
+一般来说 我们希望样式存在于css文件中而不是style标签内 因为文件更有利于客户端进行缓存
+ 插件：(专门提取样式到css文件中)
+ webpack<4  => extract-text-webpack-plugin
+ webpack>=4 => mini-css-extract-plugin
+
+
+ postCss 
+    支持未来的css  使用cssnext 书写未来的css
+    编译速度有了很大的提升
+    丰富了插件系统
+    css可以模块化
+ 注意： postcss-loader可以配合css-loader 使用  也可以单独使用  
+ 但是单独使用的时候不建议用css中的@important语法 否则会产生冗余的代码
+
+autoprefixer 自动获取浏览器的流行度和能够支持的属性 并根据这些数据帮你自动为css规则添加前缀
+ npm install autoprefixer --save-dev
+
+postCss与Autoprefixer
+    postcss必须有一个单独的配置文件 所以还需在项目根目录下配置一个postcss.config.js
+
+    内容如下：
+    const autoprefixer = require("autoprefixer")
+    module.exports = {
+        parser:'sugarss',
+        plugins:{
+            'autoprefixer':{
+                flex:true,
+                browsers:[
+                    '>1%',
+                    'last 3 versions',
+                    'androd 4.2',
+                    'ie 8'
+                ]
+            }
+        }
+    }
+
+资源按需加载-资源异步加载 (可以有效的缩小资源体积 同时更好的利用缓存)
+    在webpack中主要提供两种方法：
+    1 import函数
+    2 require.ensure    
+    在webpack4之前  webpack在编译时 会静态解析代码中的require.ensure() 同时将模块添加到一个分开的chunk当中
+    这个新的chunk 会被webpack 通过jsonp 来按需加载
+webpack 中的import
+    与正常es6中的import语法不同 通过import函数加载的模块及其依赖会被异步的进行加载 并返回一个promise对象
+
+注意：
+import函还有一个比较重要的特性 es6 module 中要求import 必须出现在代码的顶层作用域
+而webpack的import 函数则可以再任何我们希望的时候调用
+    eg:
+    import(/* webpackChunkName:'demo' */'./demo.js').then(({add}) => {
+        conosle.log(...)
+    })
+    我们通过特有的注释来让Webpack获取到异步chunk的名字，并配置output.chunkFilename为[name].js,由上可以看出
+
+异步chunk的配置
+    在webpack的配置中添加了output.chunkFilename 用来指定异步chunk的文件名
+其命名规则与output.filename基本一致 不过由于异步chunk默认没有名字 其默认值就是[id].js
