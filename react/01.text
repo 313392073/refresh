@@ -1,0 +1,573 @@
+创建组件的方式：
+    1 通过js函数创建（无状态组件）
+    2 通过class创建（有状态组件）
+js 函数创建
+    函数名必须以大写字母开头 react通过这个特点来判断是不是一个组件
+    函数必须有返回值 返回值可以是：jsx对象或null
+    返回的jsx 必须有一个根元素
+    组件的返回值使用()包裹 避免还行问题
+function LearningList(props) {
+    return (
+        <div className="list>
+            <h1>LearningList for {props.name}</h1>
+            <ul>
+                <li>Vue</li>
+                <li>React</li>
+                <li>Ng</li>
+            </ul>
+        </div>
+    )
+}
+ReactDOM.render(<Weleome name="lzg" />,document.getElementById('app'))
+
+class创建
+    在es6中class仅仅是一个语法糖 不是真正的类 本质上还是构造函数+原型 实现继承
+
+class LearningList extends React.Component{
+    constructor(props) {
+        super(props)
+    }
+    render() {
+        return (
+            <div className="list">
+                <h1>LearningList for {props.name}</h1>
+                <ul>
+                    <li>Vue</li>
+                    <li>React</li>
+                    <li>Ng</li>
+                </ul>
+            </div>
+        )
+    }
+}
+
+jsx 语法
+ jxs语法是一种js语法扩展 在react中可以方便的用来描述UI
+ const element = <h1>Hello,world!</h1>
+ 上面的代码实质等价于：
+    var element = React.createElement("h1",null,"Hello,world")
+jsx的书写规范
+    jsx的顶层只能有一个根元素 所以我们很多时候会在外包裹一层div
+    jsx中的标签可以是但标签 也可以是双标签  如果是但标签 必须以/>结尾
+    jsx的外层包裹一个小括号()  这样可以方便阅读 并且jsx可以进行换行书写
+    在{}内部 可以写任何符合js规范的代码  如果要写注释  注释必须放到{}内部
+jsx中嵌套表达式
+    在jsx中 你可以在大括号内放置任何有效的js表达式 他可以是
+        运算表达式 
+        三元运算符
+        执行一个函数
+class App extends React.Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            firstName:'kobe',
+            lastName:'bryant',
+            age:20
+        }
+    }
+    sayHello(name) {
+        return "Hello "+name
+    }
+    render() {
+        return (
+            <div>
+                <h2>{this.state.firstName+" "+this.state.lastName}</h2>
+                <h2>{this.state.age>18?'成年人':'未成年人'}</h2>
+                <h2>{this.sayHello('lzg')}</h2>
+            </div>
+        )
+    }
+}
+
+jxs条件渲染
+    两个数组二选一的渲染
+class HelloMessage extends React.Component {
+    render() {
+        let userMessage;
+        if(this.props.loggedIn) {
+            userMessage = (
+                <h1>Weleome back!</h1>
+            )
+        }else{
+            userMessage = (
+                <h1>Please sign up.</h1>
+            )
+        }
+        return (
+            <div>
+                <h1>My Super App</h1>
+                {userMessage}
+            </div>
+        )
+    }
+}
+一个组件有无的渲染
+function MessageList(props) {
+    const unreadMessage = props.unreadMessage
+    return (
+        <div>
+            <h1>Hello!</h1>
+            {unreadMessage.length>0 && <h2>You have {unreadMessage.length} unread messages.</h2>}
+        </div>
+    )
+}
+jsx列表循环
+    在jsx语法中 循环渲染是利用数组的遍历map()方法返回一个集合
+    遍历时 必须有唯一索引key提高遍历的效率 一个元素的key最好是这个元素在列表中拥有的一个独一无二的字符串 万不得空可以使用index
+class Admin extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            menus:[
+                {icon:require('../imag/home/ic_noti_block@2x.png'),title:'菜单1'},
+                {icon:require('../imag/home/ic_noti_block@2x.png'),title:'菜单1'},
+                {icon:require('../imag/home/ic_noti_block@2x.png'),title:'菜单1'},
+                {icon:require('../imag/home/ic_noti_block@2x.png'),title:'菜单1'},
+            ]
+        }
+    }
+    renderList(value,index) {
+        return (
+            <li key={index}>
+                <p>张三</p>
+                <p>18岁</p>
+            </li>
+        )
+    }
+    render() {
+        return (
+            <div>
+                <ul>
+                    {[1,2,3,4,5].map((value,index) => {
+                        return this.renderList(value,index)
+                    })}
+                </ul>
+                <ul>
+                    {this.state.menus.map((value,index) => {
+                        return (
+                            <li key={index}>
+                                <img src={value.icon} width="30" />
+                                <div>{value.title}</div>
+                            </li>
+                        )
+                    })}
+                </ul>
+            </div>
+        )
+    }
+}
+接受数据props
+    我们想要在组件之间进行传值 那么props属性就起到了这个作用 react 的每个组件都可以接受一个props参数 
+    他是一个对象 包含了所有你对这个组件的配置
+    特点：
+        React把传递给组件的属性转化为一个对象并交给props
+        props是只读的 无法给props添加或修改属性
+    function Person(props) {
+        return (
+            <ul>
+                <li>姓名：{props.name}</li>
+                <li>年龄：{props.age}</li>
+            </ul>
+        )
+    }
+    ReactDOM.render(<Weleome name="lzg" age="18" />,document.getElementById('app'))
+组件状态state
+    如果需要定义组件的自定义属性 需要在组件的constructor构造函数里面去定义state
+    特点：
+        只有通过class创建的组件才具有state
+        state是私有的 完全由组件来控制
+        不要在state中添加render()方法中不需要的数据 会影响渲染性能
+        不要在render()方法中调用setState()方法来修改state的值
+state和props的区别
+    props是组件对外的接口 state是组件对内的借口 两者主要的区别： 
+    state是可变的 是组件内部维护的一组返回ui组件的集合
+    而props是组件的只读属性 组件内不能直接修改props 只能在组件的上层修改
+创建state
+    如果需要定义组件的自定义属性  在组件的constructor构造函数里面去定义state
+    class Mycom extends React.Component {
+        constructor(props) {
+            super(props);
+            //给this.state赋值一个对象  对象的属性就是组件的自定义属性
+            this.state = {
+                name:'lzg'
+            }
+        }
+    }
+修改state
+    不能直接去修改state的值 否则数据无法驱动关联 需要使用setState setState方法接收一个参数 参数为一个对象 类似于小程序的setDate
+this.setState({name:'lzg'})
+
+使用this.setState()的第二种形式总是更安全的 因为更新的props和状态是异步的 这里 我们根据这些props更新状态
+    this.setState((state,props) => {
+        total:state.total+props.count
+    })
+另外 setState还可以接收第二个参数  第二个参数为一个回调函数
+this.setState({
+    name:'lzg'
+},() => {
+    console.log('state值修改成功，现在的name值为'+this.state.name)
+})
+
+为啥不能直接修改state 要setState一下呢？setState做的事情不仅仅只是修改了this.state的值
+另外最重要的是它会出发react的更新机制 会进行diff 然后将patch部分更新到真实dom里
+
+事件绑定
+    1  在调用的时候使用bind绑定this
+        class Foo extends React.Component {
+            handleClick() {
+                this.setState({name:'lzg'})
+            }
+            render() {
+                return <button onClick={this.handleClick.bind(this)}>Click me</button>
+            }
+        }
+    2 在构造函数中使用bind绑定this
+        class Foo extends React.Component {
+            constructor(props) {
+                super(props)
+                this.handleClick = this.handleClick.bind(this)
+            }
+            handleClick() {
+                this.setState({name:'lzg'})
+            }
+            render() {
+                return <button onClick={this.handleClick}>Click me</button>
+            }
+        }
+    3 使用箭头函数绑定this
+        class Foo extends React.Component {
+            handleClick() {
+                this.setState({name:'lzg'})
+            }
+            render() {
+                <button onClick={(e) => this.handleClick(e)}>Click me</button>
+            }
+        }
+    4 public class fields型
+        class Foo extends React.Component {
+            handleClick = () => {
+                this.setState({name:'lzg'})
+            }
+            render() {
+                return <button onClick={this.handleClick}>Click me</button>
+            }
+        }
+react 样式
+    1 直接写行内样式：
+        export const Footer = () => {
+            return <div style={{{color:'orange',fontSize:'12px'}}}>All Rights Reserved 2019</div>
+        }
+    2 抽离为对象形式
+        import React from 'react'
+        const footerStyle = {
+            backgroundColor:'green',
+            fontSize:'12px',
+            color:'orange',
+            fontWeight:'bold'
+        }
+        export const Footer = () => {
+            return <div style={footerStyle}>All Rights Reserved 2019</div>
+        }
+    3 使用样式表定义样式：
+    import '../css/comment.css'
+    export const Footer = () => {
+        return <div className="footer">All Rights Reserved 2019</div>
+    }
+
+生命周期函数
+    组件的生命周期包含三个阶段： 创建阶段（Mounting） 运行和交互阶段(Updating)  卸载阶段(Unmounting)
+1 mounting依次调用以下函数
+    constructor() es6类的构造函数
+    getInitialState() es5中初始化state
+    getDefaultProps(): es5 中初始化props 在es6中使用defaultProps()方法
+    componentWillMount(): 在组件被挂在前调用 只执行一次
+    render() 渲染组件 必须实现该方法
+    componentDidMount() 在组件装载后调用  这时已经生成了真实的dom节点 只执行一次
+2 Updating依次调用以下函数
+    componentWillReceiveProps() 组件接收到新的props前触发这个方法
+    shouldComponentUpdate() 根据这个方法的返回值决定是否重新渲染组件  返回true重新渲染 否则不渲染
+    componentWillUpdate() 组件将要更新
+    render()重新渲染组件  与Mounting阶段的render是同一个函数
+    componentDidUpdate() 组件已经被更新
+3 Unmounting
+    componentWillUnmount() 卸载组件  清除定时器  清除dom
+
+PropTypes
+    随着时间的推移  应用程序会变得越来越大 因此类型检查非常重要 PropTypes为组件提供类型检查
+并为其他开发人员提供很好的文档 如果react项目不使用Typescript 建议为组件添加PropTypes
+    //旧的写法
+    class PropTypeOne extends React.Component {
+        render() {
+            return (
+                <div>
+                    <div>{this.props.name}</div>
+                    <div>{this.props.email}</div>
+                </div>
+            )
+        }
+    }
+    PropTypeOne.propTypes = {
+        name:PropTypes.string,
+        email:function(props,propName,componentName) {
+            if (!/^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/.test(props[propName])) {
+                return new Error("组件"+componentName+"里的属性"+propName+"不符合邮箱的格式")
+            }
+        }
+    }
+    //新的写法
+    class ProTypeTwo extends React.Component {
+        static propTypes = {
+            name:ProTypes.string
+        }
+        render() {
+            return (
+                <div>
+                    <div>{this.props.name}</div>
+                </div>
+            )
+        }
+    }
+当传入的prop值类型不正确时  js控制台将会显示警告 处于性能方面的考虑 propTypes仅在开发模式下进行检查
+你可以通过配置特定的defaultProps属性来定义props的默认值：  
+    class Greeting extends React.Component {
+        render() {
+            return <h1>Hello,{this.props.name}</h1>
+        }
+    }
+    //指定props的默认值
+    Greeting.defaultProps = {
+        name:'Stranger'
+    }
+
+    //渲染出"Hello,Stranger"
+    ReactDOM.render(<Greeting />,document.getElementById("app"))
+
+受控与非受控组件
+    受控组件    
+    表单元素要绑定一个change事件  当表单的状态发生变化 就会触发onChange事件  更新组件的state
+这种组件在React中被称为受控组件  在受控组件中 组件渲染出的状态与他的value或checked属性相对应
+react通过这种方式消除了组件的局部状态 使整个状态可控 react官方同样推荐使用受控表单组件  
+    import React,{Component} from 'react'
+    export default class MyInput extends Component {
+        handleContentChange = (e) => {
+            this.setState({
+                content:e.target.value
+            })
+        }
+        render() {
+            return (
+                <div>
+                    <input type="text" value={this.state.value} onChange={this.handleContentChange} />
+                </div>
+            )
+        }
+    }
+受控组件更新state的流程：
+    可以通过初始state中设置表单的默认值
+    每当表单的值发生变化时 调用onChange事件处理器
+    事件处理器通过事件对象e拿到改变后的状态 并更新组件的state
+    一旦通过setState方法更新state 就会触发视图的重新渲染 完成表单组件的更新
+react中数据是单项流动的  从实例中 我们看出来表单的数据来源于组件的state 并通过props传入 这也称为单向数据绑定
+然后我们又通过onChange事件处理器将新的数据写回到state 完成了双向数据绑定
+
+非受控组件
+    如果一个表单组件没有value props(单选和复选按钮对应的是checked props)时 就可以称为非受控组件
+在非受控组件中 我们可以使用一个ref来从DOM获得表单值 而不是为每个状态更新编写一个事件处理程序
+
+class NameForm extends React.Component {
+    constructor(props) {
+        super(props)
+        this.handleSubmit = this.handleSubmit.bind(this)
+    }
+    handleSubmit(e) {
+        console.log(this.input.value)
+        e.preventDefault()
+    }
+    render() {
+        return (
+            <form>
+                <label>
+                    Name:
+                    <input type="text" ref={(input) => (this.input = input)} />
+                </label>
+                <input type="submit" value="Submit" />
+            </form>
+        )
+    }
+}
+
+ref 
+React 支持一种非常特殊的属性ref 你可以用来绑定到render()输出的任何组件上
+    字符串用法 通过this.refs['inputRef']来访问 <input ref="inputRef" />
+ref作为回调函数
+class AutoFocusTextInput extends Component {
+    componentDidMount() {
+        this.textInput.focus()
+    }
+    render() {
+        return (
+            <Input ref={(input) => {this.textInput = input}} />
+        )
+    }
+}
+父组件的ref回调函数可以使用子组件的DOM
+function CustomTextInput(props) {
+    return (
+        <div>
+            <input ref={props.inputRef} />
+        </div>
+    )
+}
+class Parent extends React.Component {
+    render() {
+        return <CustomTextInput inputRef={(el) => (this.inputElement = el)} />
+    }
+}
+React.createRef() 在React 16.3版本后 使用此方法来创建ref 将其赋值给一个变量 通过ref挂载在dom节点或组件上
+该ref的curent属性将能拿到dom节点或组件的实例
+
+class Child extends React.Component {
+    constructor(props) {
+        super(props)
+        this.myRef = React.createRef()
+    }
+    componentDidMount() {
+        console.log(this.myRef.current)
+    }
+    render() {
+        return <input ref={this.myRef} />
+    }
+}
+
+react-router
+    react-router-dom 是应用程序中路由的库  react库中没有路由功能 需要单独安装react-router-dom
+
+    react-router-dom 提供两个路由器 BrowserRouter和HashRouter 前者基于url的pathname段 后者基于hash段
+基本使用：
+    npm i reatc-router-dom --save
+import {BrowserRouter,Route,Link,Redirect} from 'react-router-dom'
+class MyRouter extends React.Component {
+    render() {
+        return (
+            <BrowserRouter>
+                <Link to="/">router1</Link>
+                <Link to="/router2">router2</Link>
+                <Link to="/router3">router3</Link>
+                <Redirect exact from="/" to="/router1" />
+                <Route path="/router1" component={router1}></Route>
+                <Route path="/router2" component={router2}></Route>
+                <Route path="/router3" component={router3}></Route>
+            </BrowserRouter>
+        )
+    }
+}
+1 用Link标签跳转
+2 编程式导航
+    路由组件可以直接从this.props.history上拿到history
+    非路由组件无法直接拿到history 需要配合withRouter
+
+    this.props.history.push(url)
+    this.props.history.go(-1)
+路由传参
+    1 params
+        <Route path='/path/:name' component={Path} />
+        <Link to="/path/123">xxx</Link>
+        this.props.history.push({pathname:'/path/'+name})
+        //读取参数用： this.props.match.params.name
+    2 query
+        <Route path='/query' component={Query}/>
+        <Link to={{pathname:'/query',query:{name:'sunny'}}}></Link>
+
+        this.props.history.push({pathname:'query',query:{name:'sunny'}})
+        //读取参数用：this.props.location.query.name
+    3 state
+        <Route path="/sort" component={Sort}/>
+        <Link to={{pathname:'/sort',state:{name:'sunny'}}}></Link>
+
+        this.props.history.push({pathname:'/sort',state:{name:'sunny'}})
+        //读取参数用 this.props.location.query.state
+    4 search
+        <Route path="/web/search" component={Search} />
+        <Link to="web/search?id=1212">xxx</Link>
+
+        this.props.history.push({pathname:`/web/search?id${row.id}`})
+        //读取参数用： this.props.location.search
+路由守卫
+    Route组件可以接收一个Component组件 当path匹配上的时候  这个Route组件就会被渲染出来
+    我们还可以在路径匹配之后做一点事情 这一点类似于Vue中的路由守卫
+    用到的还是Route这个组件 只不过这次组件不通过Component去传递数据 通过render属性
+
+import {Route} from 'react-router-dom'
+function Custom() {
+    return (
+        <Route path="/index" Render={() => {if(isLogin) {return <Index></Index>}else{return <Login></Login>}}} />
+    )
+}
+withRouter
+    高阶组件中的withRouter 作用是将一个组件包裹进Route里面 然后react-router的三个对象history location match就会被放进这个组件的props属性中
+默认情况下 必须是经过路由匹配渲染的组件才存在this.props 才拥有路由参数 才能使用编程式导航的写法  执行this.props.history.push("/detail")跳转到对应
+路由的页面  然而不是所有的组件都直接与路由相连(通过路由跳转到此组件)的 当这些组件需要路由参数时 使用withRouter就可以给此组件传入路由参数 此时就可以使用this.props
+
+import React,{Component} from 'react'
+import {Switch,Route,NavLink,Redirect,withRouter} from 'react-router-dom'
+import NotFound from './NotFound'
+class App extends Component {
+    //此时才能获取this.props 包含（history match location）三个对象
+    console.log(this.props) //输出{mathc:{},location:{},history:{}}
+    render() {
+        return (
+            <div className="app">
+                <NavLink to='/one/users'>用户列表</NavLink>
+                <NavLink to='/one/companies'>公司列表</NavLink>
+                <Switch>
+                    <Route path="/one/:type?' component={One}'" />
+                    <Redirect from="/" to="/one" exact />
+                    <Route component={NotFound} />
+                </Switch>
+            </div>
+        )
+    }
+}
+export default withRouter(App)
+
+
+----------------分割线---------------
+jsx写法
+ jsx是js和xml结合的一种格式 react发明了jsx 利用html语法来创建虚拟dom
+eg:
+    import './css/index.css'
+    class APP extends Component {
+        render() {
+            var myname = 'anna';
+            var styleobj = {
+                background:'red',
+                fontSize:'30px'
+            }
+            return (
+                <div>
+                    {10+20} -- {myname}
+                    {10>20?1:0}
+                    <div style={styleobj}>1111</div>
+                    <div style={{background:'yello'}}>222</div>
+                    <div className="active">333</div>
+                    <div id="box">444</div>
+                </div>
+            )
+        }
+    }
+
+组件写法
+    class类式组件
+import React,{Component} from 'react'
+class Hello extends React.Component{
+    render() {
+        return (
+            <div>1111
+                <ul>
+                    <li>1111</li>
+                    <li>2222</li>
+                </ul>
+            </div>
+        )
+    }
+}

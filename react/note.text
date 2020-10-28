@@ -1,0 +1,849 @@
+jsx？
+
+//使用引号 来将属性值指定为字符串字面量
+const element = <div tabIndex="0"></div>
+//使用大括号  来将属性值中插入一个js表达式 
+const element = <img src={user.avatarUrl} />
+
+tips：
+JSX语法上更接近js而不是html 所以reactdom 使用camelCase(小驼峰命名)来定义属性的名称
+而不使用HTML属性名称的命名约定 eg: class => classIName  tabindex => tableIndex
+
+jsx防止注入攻击
+const title = response.potentiallyMaliciousInput;
+// 直接使用是安全的：
+const element = <h1>{title}</h1>;
+
+react dom 在渲染所有输入内容之前 默认回进行转义 他可以确保在你的应用中 永远不会注入那些并非自己明确编写的内容
+所有的内容在渲染之前都被转换成了字符串 这样可以有效的防止xss攻击
+
+函数组件：
+    此函数接收唯一带有数据的props对象与并返回一个react元素
+    function Welcome(props) {
+        return <h1>Hello,{props.name}</h1>
+    }
+class组件
+    class Welcome extends React.Component {
+        render() {
+            return <h1>Hello,{this.props.name}</h1>
+        }
+    }
+
+当react 元素为用户自定义组件时 它会将jsx所接收的属性以及子组件转换为单个对象传递给组件 这个对象称之为props
+
+function Welcome (props) {
+    return <h1>Hello,{props.name}</h1>
+}
+const element = <Welcome name="Sara" />
+ReactDOM.render(
+    element,
+    document.getElementById('root')
+)
+
+tips： 组件名称必须以大写字母开头
+    react会将以小写字母开头的组件视为原声dom标签 大写字母开头的标签 则视为一个组件 并且需在作用域内使用
+
+props 的只读性
+    组件无论是使用函数声明还是通过class声明 都决不能修改自身的props
+
+纯函数  因为该函数不会尝试更改入参 且多次调用下相同的入参始终返回相同的结果
+function sum(a,b) {
+    return a+b
+}
+
+function Clock(props) {
+    return (
+        <div>
+            <h1>Hello,world!</h1>
+            <h2>It is {props.date.toLocaleTimeString()}</h2>
+        </div>
+    )
+}
+function tick() {
+    ReactDOM.render(
+        <Clock date={new Date()} />,
+        document.getElementById('root')
+    )
+}
+setInterval(tick,1000)
+
+向class组件中添加局部的state
+    我们通过以下3步将date从props移动到state中
+    1 把render()方法中的this.props.date 替换成this.state.date
+    2 添加一个class构造函数 然后在该函数中为this.state赋初值
+    3 移除组件元素中的date属性
+
+class Clock extends React.Component {
+    construcor(props) {
+        super(props)
+        this.state = {date:new Date()}
+    }
+    render() {
+        return (
+            <div>
+                <h1>Hello,world!</h1>
+                <h2>It is {this.state.date.toLocaleTimeString()}</h2>
+            </div>
+        )
+    }
+}
+ReactDOM.render(
+    <Clock />,
+    document.getElementById("root")
+)
+
+将生命周期方法添加到Class中
+    class Clock extends React.Component {
+        construcor(props) {
+            super(props)
+            this.state = {date:new Date()}
+        }
+        //componentDidMount 方法会在组件已经被渲染到dom中后运行
+        componentDidMount() {
+            this.timerID = setInterval(
+                () => this.tick(),1000
+            )
+        }
+        componentWillUnmount() {
+            clearInterval(this.timerID)
+        }
+        tick() {
+            this.setState({
+                date:new Date()
+            })
+        }
+        render() {
+            return (
+                <div>
+                    <h1>Hello,world!</h1>
+                    <h2>It is {this.state.date.toLocaleTimeString()}</h2>
+                </div>
+            )
+        }
+    }
+ReactDOM.render(
+    <Clock />,
+    document.getElementById("root")
+)
+
+正确的使用state
+  1 不要直接给state的属性赋值  而是有专门的方式 this.setState({key:newValue}) 构造函数是唯一可以给this.state赋值的地方
+  2 state的更新可能是异步的
+    出于性能的考虑 react可能会把多个setState调用合并成一个调用
+    因为this.props和this.state可能会异步更新  所以你不要依赖他们的值来更新下一个状态
+    涉及到这两个状态的更新  this.setState((props,state) => {key:props+state})
+    this.setState()接收一个函数而不是一个对象 可以将state和props作为参数传递进去
+    函数可以是箭头函数 可以是普通的函数
+    eg:
+        this.setState(function(state,props) {
+            return {
+                counter:state.counter+props.increment
+            }
+        })
+  3 state的更新会被合并
+  当你调用setState()的时候  react会把你提供的对象合并到当前的state
+  construcor(props) {
+      super(props);
+      this.state = {
+          posts:[],
+          comments:[]
+      }
+  }
+然后你可以分别调用setState()来单独的更新他们
+    componentDidMount() {
+        fetchPosts().then(response => {
+            this.setState({
+                posts:response.posts
+            })
+        })
+        fetchPosts().then(response => {
+            this.setState({
+                comments:response.comments
+            })
+        })
+    }
+
+数据是向下流动的
+    不管是父组件或是子组件都无法知道某个组件是有状态的还是无状态的 并且他们也并不关心他是函数组件还是class组件
+这就是为什么称state为局部组的或是封装的原因 除了拥有并设置了他的组件 其他组件都无法访问
+    组件可以选择把它的state作为props向下传递到他的子组件中
+    <h2>It is {this.state.date.toLocaleTimeString()}</h2>
+    对于自定义组件同样适用
+    <FormattedDate date={this.state.date} />
+
+    FormattedDate组件会在其props中接收参数date 但是组件本身无法知道它是来自于Clock的state 或是Clock的props
+
+    function FormattedDate(props) {
+        return <h2>It is {props.date.toLocaleTimeString()}</h2>
+    }
+
+这通常会被叫做"自上而下"或是"单向"的数据流 
+任何的state总是所属特定的组件 而且从该state派生的任何数据或UI只能影响树中"低于"他们的组件
+事件处理
+    react元素的事件处理和dom元素的很相似 但是有一点语法上的不同：
+1 react事件的命名采用小驼峰式 而不是纯小写
+2 使用jsx语法时你需要传入一个函数作为事件处理函数 而不是一个字符串
+    传统的
+    <button onClick="activateLasers()">Activate Lasers</button>
+    react中的
+    <button onClick={activateLasers}>Activate Lasers</button>
+在react中另一个不同点式你不能通过返回false的方式阻止默认行为 你必须显示的使用preventDefault
+
+function ActionLink() {
+    function handleclick(e) {
+        e.preventDefault()
+        console.log('The link was clicked')
+    }
+    return (
+        <a href="#" onClick={handleclick}>Click me</a>
+    )
+}
+在这里  e 是一个合成事件 使用react时 你一般不需要使用addEventListener为已创建的dom元素添加监听器
+ 事实上  你只需要在该元素初始渲染的时候添加监听器即可
+class Toggle extends React.Component {
+    construcor(props) {
+        super(props);
+        this.state = {isToggleOn:true}
+        this.handleClick = this.handleClick.bind(this)
+    }
+    handleClick() {
+        this.setState(state => {
+            isToggleOn:!state.isToggleOn
+        })
+    }
+    render() {
+        return (
+            <button onClick={this.handleClick}>
+            {this.state.isToggleOn?'NO':'OFF'}
+            </button>
+        )
+    }
+}
+ReactDOM.render(
+    <Toggle />,
+    document.getElementById('root')
+)
+
+你必须谨慎对待jsx回调函数中的this 在js中 class的方法默认不会绑定this 如果你忘记绑定this.handleClick
+并把它传入了onClick 当你调用这个函数的时候this的值为undefined
+
+class LoggingButton extends React.Component {
+    此语法确保handleClick 内的this已被绑定
+    注意： 这是*实验性*语法
+    handleClick = () => {
+        console.log('this is:',this)
+    }
+    render() {
+        return (
+            <button onClick={this.handleClick}>Click me</button>
+        )
+    }
+}
+如果没有使用class fields语法  你可以在回调函数中使用箭头函数：
+    class LoggingButton extends React.Component {
+        handleClick() {
+            console.log('this is:',this)
+        }
+        render() {
+            //此语法确保handleClick内的this已被绑定
+            return (
+                <button onClick={() => this.handleClick()}>Click me</button>
+            )
+        }
+    }
+
+此语法问题在于每次渲染LoggingButton时都会创建不同的回调函数 在大多数情况下 没有什么问题  但是如果该回调函数作为
+props传入子组件时 这些组件可能会进行额外的重新渲染 我们通常建议在构造器中绑定或使用class fields语法来避免这类性能问题
+
+向事件处理程序传递参数 
+    <button onClick={(e) => this.deleteRow(id,e)}>delete Row</button>
+    <button onClick={this.deleteRow.bind(this,id)}>delete Row</button>
+react 的事件对象e会被作为第二个参数传递  如果通过箭头函数的方式 事件对象必须显示的进项传递 
+通过bind的方式  事件对象以及更多的参数将会被隐式的进行传递
+
+条件渲染
+    在react中的条件渲染和js中的一样 使用js运算符if或者条件运算符去创建元素来表现当前的状态 然后让react根据他们来更新UI
+function UserGreeting(props) {
+    return <h1>Welcome back!</h1>
+}
+function GuestGreeting(props) {
+    return <h1>Please sign up.</h1>
+}
+function Greeting(props) {
+    const isLoggedIn = props.isLoggedIn;
+    if(isLoggedIn) {
+        return <UserGreeting />;
+    }
+    return <GuestGreeting />;
+}
+ReactDOM.render(
+    <Greeting isLoggedIn={false} />,
+    document.getElementById("root")
+)
+
+function LoggingButton(props) {
+    return (
+        <button onClick={props.onClick}>Login</button>
+    )
+}
+
+function LogoutButton(props) {
+    return (
+        <button onClick={props.onClick}>Logout</button>
+    )
+}
+
+class LoginControl extends React.Component {
+    construcor(props) {
+        super(props);
+        this.handleLoginClick = this.handleLoginClick.bind(this)
+        this.handleLogoutClick = this.handleLogoutClick.bind(this)
+        this.state = {isLoggedIn:false}
+    }
+    handleLoginClick() {
+        this.setState({isLoggedIn:true})
+    }
+    handleLogoutClick() {
+        this.setState({isLoggedIn:false})
+    }
+    render() {
+        const isLoggedIn = this.state.isLoggedIn
+        let button;
+        if(isLoggedIn) {
+            button = <LoggingButton onClick={this.handleLogoutClick} />
+        }else{
+            button = <LoggingButton onClick={this.handleLoginClick} />
+        }
+        return (
+            <div>
+                <Greeting isLoggedIn={isLoggedIn} />
+                {button}
+            </div>
+        )
+    }
+}
+ReactDOM.render(
+    <LoginControl />,
+    document.getElementById("root")
+)
+
+与运算符&&
+    通过花括号包裹代码 你可以在jsx中嵌入任何表达式 这也包括js中的逻辑与&& 运算符
+    可以很方便地进行元素的条件渲染
+function Mailbox(props) {
+    const unreadMessages = props.unreadMessages;
+    return (
+        <div>
+            <h1>Hello!</h1>
+            {unreadMessages.length >0 && <h2>You have {unreadMessages.length} unread messages</h2>}
+        </div>
+    )
+}
+const messages = ['React','Re:React','Re:Re:React']
+ReactDOM.render(
+    <Mailbox unreadMessages={messages} />,
+    document.getElementById("root")
+)
+
+function NumberList(props) {
+    const numbers = props.numbers;
+    const listItems = numbers.map((number) => {
+        <li key={number.toString()}>{number}</li>
+    })
+    return (
+        <ul>{listItems}</ul>
+    )
+}
+const numbers = [1,2,3,4,5];
+ReactDOM.render(
+    <NumberList numbers={numbers} />,
+    document.getElementById('root')
+)
+
+key: 帮助react识别哪些元素改变了 比如被添加或删除 因此你应当给数组中的每一个元素赋予一个确定的标识
+用key提取组件 元素的key只有放在就近的数组上下文中才有意义
+比如 你提取一个ListItem组件 你应该把key保留自爱数组中的这个<ListItem />元素上 而不是放在ListItem组件中的<li>元素的key只有放在就近的数组上下文中才有意义
+
+    function ListItem(props) {
+        //这里不需要指定key
+        return <li>{props.value}</li>
+    }
+    function NumberList(props) {
+        const numbers = props.numbers;
+        const listItems = numbers.map((number) => {
+            <ListItem key={number.toString()} value={number} />
+        })
+        return (
+            <ul>{listItems}</ul>
+        )
+    }
+    const numbers = [1,2,3,4,5];
+    ReactDOM.render(
+        <NumberList numbers={numbers} />,
+        document.getElementById("root")
+    )
+
+key只是在兄弟节点之间必须唯一
+    数组元素中使用的key在其兄弟节点之间应该是独一无二的 然而 他们不需要全局唯一 当我们生成两个不同的数组时 我们可以使用相同的key值
+
+function Blog(props) {
+    const sidebar = (
+        <ul>
+            {props.posts.map((post) => {
+                <li key={post.id}>{post.title}</li>
+            })}
+        </ul>
+    )
+    const content = props.posts.map((post) => {
+        <div key={post.id}>
+            <h3>{post.title}</h3>
+            <p>{post.content}</p>
+        </div>
+    })
+    return (
+        <div>
+            {sidebar}
+            <hr />
+            {content}
+        </div>
+    )
+}
+const posts = [
+    {id:1,title:'Hello world',content:'Welcome to learning React!'},
+    {id:2,title:'Installation',content:'You can install React from npm'},
+]
+ReactDOM.render(
+    <Blog posts={posts} />,
+    document.getElementById("root")
+)
+key会传递信息给react 但是不会传递给你的组件  如果你的组件中需要使用key属性的值 请使用其他属性名显示传递这个值
+
+const content = posts.map((post) => {
+    <Post key={post.id} id={post.id} title={post.title} />
+})
+
+function NumberList(props) {
+    const numbers = props.numbers;
+    const listItems = numbers.map((number) => {
+        <ListItem key={number.toString()} value={number} />
+    })
+    return (
+        <ul>{listItems}</ul>
+    )
+}
+
+jsx允许在大括号中嵌入任何表达式 所以我们可以内联map()返回的结果
+    function NumberList(props) {
+        const numbers = props.numbers;
+        return (
+            <ul>
+                {number.map((number) => {
+                    <ListItem key={number.toString()} value={number} />
+                })}
+            </ul>
+        )
+    }
+
+表单
+    在react里 html表单元素的工作方式和其他的dom元素有些不同 这是因为表单元素通常会保持一些内部的state
+
+<form>
+    <label>
+        名字：
+        <input type="text" name="name" />
+    </label>
+    <input type="submit" value="提交" />
+</form>
+此表单具有默认的html表单行为 即在用户提交表单后浏览到刷新页面 如果你在react中执行相同的代码 他依然有效
+但是大多数情况下 使用js函数可以很方便的处理表单的提交 同时还可以访问用户填写的表单数据 实现这种效果的标准
+方式是使用"受控组件"
+    受控组件
+在html中 表单元素input textarea select 之类的表单元素通常自己维护state 并根据用户输入进行更新
+
+class NameForm extends React.Component {
+    construcor(props) {
+        super(props);
+        this.state = {value:''}
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+    handleChange(event) {
+        this.setState({
+            value:event.target.value
+        })
+    }
+    handleSubmit(event) {
+        console.log(this.state.value)
+        event.preventDefault()
+    }
+    render() {
+        return (
+            <form onSubmit={this.handleSubmit}>
+                <label>
+                    名字：
+                    <input type="text" value={this.state.value} onChange={this.handleChange} />
+                </label>
+                <input type="submit" value="提交" />
+            </form>
+        )
+    }
+}
+由于在表单元素上设置了value属性 因此显示的值将始终为this.state.value 这使得react的state成为唯一数据源
+由于handlechange在每次按键时都会执行并更新react的state 因此显示的值将随着用户输入而更新
+ 对于受控组件来说  输入的值始终由react的state驱动 你也可以将value传递给其他UI元素 或者通过其事件处理函数重置
+
+class EssayForm extends React.Component {
+    construcor(props) {
+        super(props)
+        this.state = {
+            value:'请撰写一篇关于你喜欢的dom元素的文章'
+        }
+        this.handleChange = this.handleChange.bind(this)
+        this.handleSubmit = this.handleSubmit.find(this)
+    }
+    handleChange(event) {
+        this.setState({
+            value:event.target.value
+        })
+    }
+    handleSubmit(event) {
+        console.log(event.target.value)
+        event.preventDefault()
+    }
+    render() {
+        return (
+            <form onSubmit={this.handleSubmit}>
+                <label>
+                    文章:
+                    <textarea value={this.state.value} onChange={this.handleChange}></textarea>
+                </label>
+                <input type="submit" value="提交" />
+            </form>
+        )
+    }
+}
+
+select 
+
+class FlavorForm extends React.Component {
+    construcor(props) {
+        super(props)
+        this.state = {value:'coconut'}
+        this.handleChange = this.handleChange.bind(this)
+    }
+    handleChange(event) {
+        this.setState({value:event.target.value})
+    }
+    handleSubmit(event) {
+        console.log(this.state.value)
+        event.preventDefault()
+    }
+    render() {
+        return (
+            <form onSubmit={this.handleSubmit}>
+                <label>
+                选择你喜欢的风味：
+                    <select value={this.state.value} onChange={this.handleChange}>
+                        <option value="grapefrut">葡萄柚</option>
+                        <option value="lime">酸橙</option>
+                        <option value="coconut">椰子</option>
+                        <option value="mango">芒果</option>
+                    </select>
+                </label>
+                <input type="submit" value="提交" />
+            </form>
+        )
+    }
+}
+
+class Reservation extends React.Component {
+    construcor(props) {
+        super(props)
+        this.state = {
+            isGoing:true,
+            numberOfGuests:2
+        }
+        this.handleInputChange = this.handleInputChange.bind(this)
+    }
+    handleInputChange(event) {
+        const target = event.target;
+        const value = target.name === 'isGoing'?target.checked:target.value
+        const name = target.name
+
+        this.setState({
+            [name]:value
+        })
+    }
+    render() {
+        return (
+            <form>
+                <label>
+                    参与：
+                    <input name="isGoing" type="checkbox" checked={this.state.isGoing} onChange={this.handleInputChange} />
+                </label>
+                <br />
+                <label>
+                    来宾人数：
+                    <input name="numberOfGuests" type="number" value={this.state.numberOfGuests} onChange={this.handleInputChange} />
+                </label>
+            </form>
+        )
+    }
+}
+状态提升
+    多个组件需要反应相同的变化数据 这是我们建议将共享状态提升到最近的共同父组件中去
+function BoilingVerdict(props) {
+    if(props.celsius >= 100) {
+        return <p>The water would boil</p>
+    }
+    return <p>The water would not boil</p>
+}
+
+class Calculator extends React.Component {
+    construcor(props) {
+        super(props)
+        this.handleChange = this.handleChange.bind(this)
+        this.state = {templature:''}
+    }
+    handleChange(e) {
+        this.setState({
+            templature:e.target.value
+        })
+    }
+    render() {
+        const templature = this.state.templature;
+        return (
+            <fieldset>
+                <legend>Enter templature in CELSIUS:</legend>
+                <input value={templature} onChange={this.handleChange} />
+                <BoilingVerdict celsius={parseFloat(templature)} />
+            </fieldset>
+        )
+    } 
+}
+
+const scaleNames = {
+    c:'Celsius',
+    f:'Fahrenheit'
+}
+class templatureInput extends React.Component {
+    construcor(props) {
+        super(props)
+        this.handleChange = this.handleChange.bind(this)
+        this.state = {templature:''}
+    }
+    handleChange(e) {
+        this.setState({templature:e.target.value})
+    }
+    render() {
+        const templature = this.state.templature;
+        const scale = this.props.scale;
+        return (
+            <fieldset>
+                <legend>Enter templature in {scaleNames[scale]}：</legend>
+                <input value={templature} onChange={this.handleChange} />
+            </fieldset>
+        )
+    }
+}
+
+function toCelsius(Fahrenheit) {
+    return (fahrenheit - 32)*5/9
+}
+function toFahrenheit(celsius) {
+    return (celsius*9/5)+32
+}
+
+function tryConvert(templature,convert) {
+    const input = parseFloat(templature)
+    if(number.isNaN(input)) {
+        return ''
+    }
+    const output = convert(input);
+    const rounded = Math.round(output*1000)/1000
+    return rounded.toString()
+}
+在react中  将多个组件中需要共享的state向上移动到他们的最近共同父组件中 便可实现共享state
+这就是所谓的状态提升 接下来 我们将TemplatureInput 组件中的state移动至Calculator组件中去
+
+如果Calculator组件拥有了共享的state 他将成为两个温度输入框中当前温度的数据源 他能够使得两个温度输入框的数值彼此保持一致
+
+我们知道props是只读的 当templature存在于TemplatureInput组件的state中时 组件调用this.setState()便可修改它
+然而 templature是由父组件传入的prop templatureInout组件便失去了对它的控制权
+
+在react中  这个问题通常是通过使用“受控组件”来解决的  与dom中的input接受value和onChange一样
+自定义的TemplatureInpt组件接受templature和onTemplatureChange 这两个来自父组件Calculator的props
+
+class templatureInput extends React.Component {
+    construcor(props) {
+        super(props)
+        this.handleChange = this.handleChange.bind(this)
+    }
+
+    handleChange(e) {
+        this.props.onTemperatureChange(e.target.value)
+    }
+
+    render() {
+        const templature = this.props.templature;
+        const scale = this.props.scale
+        return (
+            <fieldset>
+                <legend>Enter templature in {scaleNames[scale]}:</legend>
+                <input value={templature} onChange={this.handleChange} />
+            </fieldset>
+        )
+    }
+}
+
+class Calculator extends React.Component {
+    construcor(props) {
+        super(props)
+        this.handleCelsiusChange = this.handleCelsiusChange.bind(this)
+        this.state = {templature:'',scale:'c'}
+    }
+
+    handleCelsiusChange(temperature) {
+        this.setState({
+            scale:'c',temperature
+        })
+    }
+
+    handleFahrenhitChange(temperature) {
+        this.setState({
+            scale:'f',temperature
+        })
+    }
+
+    render() {
+        const scale = this.state.scale;
+        const temperature = this.state.temperature;
+        const celsius = scale === 'f'?tryConvert(temperature,toCelsius):temperature;
+        const fahrenheit = scale === 'c'?tryConvert(temperature,toFahrenheit):temperature
+        return (
+            <div>
+                <TemperatureInput scale="c" scale="c" temperature={celsius} onTemperatureChange={this.handleCelsiusChange} />
+                <TemperatureInput scale="f" temperature={fahrenheit} onTemperatureChange={this.handleFahrenhitChange />
+                <BoilingVerdict celsius={parseFloat(celsius)} />
+            </div>
+        )
+    }
+}
+
+在react应用中 任何可变数据应当只有一个相对应的唯一数据源 通常state都是首先添加到需要渲染数据的组件中去 
+然后 如果其他组件也需要这个state 那么你可以将它提升至这些组件的最近共同父组件中 你应当依靠自上而下的数据流
+而不是尝试在不同组件间同步state
+ 
+虽然提升state方式比双向绑定方式需要编写更多的样板代码 但是带来的好处是 排查和隔离bug所需的工作量将会变少
+由于存在于组件中的任何state 仅有该组件自己能够修改它 因此bug的排查范围被大大缩减了 此外  你也可以使用自定义逻辑来拒绝或转换用户的输入
+
+
+组合 vs 继承
+function FancyBorder(props) {
+    return (
+        <div className={'FancyBorder FancyBorder-'+props.color}>
+            {props.children}
+        </div>
+    )
+} 
+
+function WelcomeDialog() {
+    return (
+        <FancyBorder color="blue">
+            <h1 className="Dialog-title">Welcome</h1>
+            <p className="Dialog-messages">Thank you for visiting our spacecraft!</p>
+        </FancyBorder>
+    )
+}
+
+FancyBorder jsx标签中的所有内容都会作为一个children prop传递给FancyBorder组件
+因为FancyBorder将{props.children}渲染在一个div中  被传递的这些子组件最终都会出现在输出结果中
+
+少数情况下 你可能需要在一个组件中预留出几个洞  这种情况下 我们可以不使用children 而是自行约定
+将所有内容传入props 并使用相应的prop
+
+function SplitPane(props) {
+    return (
+        <div className="SplitPane">
+            <div className="SplitPane-left">{props.left}</div>
+            <div className="SplitPane-right">{props.right}</div>
+        </div>
+    )
+}
+
+function App() {
+    return (
+        <SplitPane left={
+            <Contacts />
+        } right={
+            <Chat />
+        }></SplitPane>
+    )
+}
+<Contents/>和<Chat/>之类的React元素本质就是对象object 所以你可以把他们当做props 
+向其他数据一样传递  这种方法可那个使你想起别的库中的"槽"slot的概念 但是在react中没有
+“槽”这一概念的限制  你可以将任何东西作为props进行传递
+
+特例关系：
+    有些时候 我们会把一些组件看作是其他组件的特殊实例  比如WelcomeDialog 可以说是Daalog的特殊实例
+在react中  我们可以通过组合来实现这一点  特殊组件可以通过props定制并渲染一般组件
+
+function Dialog(props) {
+    return (
+        <FancyBorder color="blue">
+            <h1 className="Dialog-title">{props.title}</h1>
+            <p className="Dialog-message">{props.message}</p>
+        </FancyBorder>
+    )
+}
+
+function WelcomeDialog() {
+    return (
+        <Dialog title="Welcome" message="Thank you for visiting our spacecraft!" />
+    )
+}
+
+function Dialog(props) {
+    return (
+        <FancyBorder color="blue">
+            <h1 className="Dialog-title">{props.title}</h1>
+            <p className="Dialog-message">{props.message</p>
+            {props.children}
+        </FancyBorder>
+    )
+}
+
+class SignUpDialog extends React.Component {
+    construcor(props) {
+        super(props)
+        this.handleChange = this.handleChange.bind(this)
+        this.handleSignUp = this.handleSignUp.bind(this)
+        this.state = {login:''}
+    }
+    render() {
+        return (
+            <Dialog title="Mars Exploration Program" message="How should we refer to you?">
+                <input value={this.state.login} onChange={this.handleChange} />
+                <button onClick={this.handleSignUp}>
+                Sign Me Up!
+                </button>
+            </Dialog>
+        )
+    }
+
+    handleChange(e) {
+        this.setState({
+            login:e.target.value
+        })
+    }
+
+    handleSignUp() {
+        console.log(${this.state.login})
+    }
+}
+
+props和组合为你提供了清晰而安全的定制组件外观和行为的灵活方式 
+注意：组件可以接受任意props 包括基本数据类型 react元素以及函数
+
+如果你想在组件复用非UI的功能 我们建议将其提取为一个单独的js模块
+如 函数 对象或者类 组件可以直接引入而无须通过extend 继承他们

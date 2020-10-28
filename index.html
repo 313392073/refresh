@@ -38,6 +38,34 @@
                 transform: translate(calc(-100% + 150px),0)
             }
         }
+
+        .sj-box{
+            width: 500px;
+            margin: 20px auto;
+            border: 1px dashed transparent;
+            background: linear-gradient(white,white) padding-box,repeating-linear-gradient(-45deg,#ccc,0,#ccc,0.25rem,white 0,white 0.75rem);
+        }
+        .sj-box .sj1{
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 20px 40px 20px;
+            border-color: transparent transparent salmon transparent;
+        }
+        .sj-box .sj2{
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 40px 20px 0 20px;
+            border-color: salmon transparent transparent  transparent;
+            margin-top: 5px;
+        }
+        .sj-boxs{
+            width: 500px;
+            margin: 0px auto;
+            height: 50px;
+            border: 1px dashed #ccc;
+        }
     </style>
 </head>
 <body>
@@ -45,6 +73,16 @@
         <p title="我的宽度是正常宽度">我的宽度是正常宽度</p>
         <p class="scroll" title="我的宽度是溢出了一小部分">我的宽度是溢出了一小部分</p>
         <p class="scroll" title="我的宽度是溢出了溢出了很大一部分">我的宽度是溢出了溢出了很大一部分</p>
+    </div>
+
+    <div class="sj-box">
+        <div class="sj1"></div>
+        <div class="sj2"></div>
+    </div>
+
+    <div class="sj-boxs">
+        <div class="sj1"></div>
+        <div class="sj2"></div>
     </div>
     <script type="text/javascript">
         // function identify() {

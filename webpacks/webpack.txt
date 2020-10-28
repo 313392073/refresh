@@ -82,7 +82,7 @@ babel-loader 支持从.babelrc文件读取babel配置
  webpack>=4 => mini-css-extract-plugin
 
 
- postCss 
+ postCss  postcss-loader 解决的是加上厂商前缀
     支持未来的css  使用cssnext 书写未来的css
     编译速度有了很大的提升
     丰富了插件系统
@@ -131,6 +131,71 @@ import函还有一个比较重要的特性 es6 module 中要求import 必须出�
     })
     我们通过特有的注释来让Webpack获取到异步chunk的名字，并配置output.chunkFilename为[name].js,由上可以看出
 
+webpack 的几种hash值
+    A:hash
+        1 构建项目hash 
+            和整个webpack 构建项目相关的 每次项目构建hash对应的值都是不同的 即使项目文件没有做"任何修改"
+        2 不同入口的chunkhash
+        3 文件的内同contenthash
+    B:chunkhash
+        chunkhash 跟webpack打包的chunk相关 具体来说webpack是根据入口entry配置文件来分析其依赖
+        并由此来构建entry和chunk 并生成对应的hash值  不同的chunk会有不同的hash值 一般在项目中把公共的依赖库
+        和程序入口文隔离并进行单独打包构建 用chunkhash来生成hash值 只要依赖公共库不变 那么其对应的chunkhash就
+        不会变 从而达到缓存的目的
+        module.exports = {
+            entry:{
+                app:'./src/main.js',
+                vendor:['react','redux','react-dom','react-redux','react-router-redux']
+            },
+            output:{
+                path:path.join(__dirname,'/dist/js'),
+                filename:'[name].[chunkhash].js'
+            }
+        }
+    C:contenthash
+        contenthash 表示由文件内容产生的hash值 内容不同产生的contenthash值也不一样 在项目中 通常做法是把项目中css都抽离出对应的css文件
+        来加以引用 
+        module.exports = {
+            ...
+            plugins:[
+                new ExtraTextPlugin({
+                    filename:'static/[name]_[chunkhash:7].css',
+                    disable:false,
+                    allChunks:true
+                })
+            ]
+        }
 异步chunk的配置
     在webpack的配置中添加了output.chunkFilename 用来指定异步chunk的文件名
 其命名规则与output.filename基本一致 不过由于异步chunk默认没有名字 其默认值就是[id].js
+
+CommonsChunkPlugin
+    webpack插件CommonsChunkPlugin的主要作用是抽取webpack项目入口chunk公共部分 
+    使用：假如需求是将我们项目的公共库如react react-dom react-router 与业务代码分离
+    将其提取为vendor chunk 则配置如下
+
+    const webpack = require("webpack")
+    const path = require("path")
+    module.exports = {
+        entry:{
+            app:'./src/main.js',
+            vendor:['react','react-dom','redux','react-redux','react-router-redux']
+        },
+        output:{
+            path:path.resolve(__dirname,'output'),
+            filename:"[name].[chunkhash].js"
+        },
+        plugins:[
+            new webpack.optimize.CommonsChunkPlugin({names:['vendor']}),
+            new webpack.optimize.CommonsChunkPlugin({
+                name:'manifest',
+                chunks:['vendor']
+            })
+        ]
+    }
+    以上配置意思是 将一些基础的库（vendor）打包成一个名为vendor的chunk中 并将业务相关代码打包到一个名为app的chunk中
+
+SplitChunksPlugin 代码分割
+    当你有多个入口文件 或者是打包文件需要做一个划分 比如第三方库lodash jquery 等库需要打包到一个目录下
+    自己的业务逻辑代码需要打包到一个文件下 这时候  就需要提取公共模块了 也就需要SplitChunksPlugin插件了
+
